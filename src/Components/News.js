@@ -16,16 +16,35 @@ export class News extends Component {
       pageSize:PropTypes.number,
       category:PropTypes.string
   }
+  capitalizeFirstLetter=(str)=>{
+      return str.charAt(0).toUpperCase()+str.slice(1)
+  }
 
-    constructor(){                                    //constructor of News class
+    constructor(props){                                    //constructor of News class
        console.log("I am constructor of News component")
-       super();             //this is necessary otherwise we will get this error "'this' is not allowed before 'super()' "
+       super(props);             //this is necessary otherwise we will get this error "'this' is not allowed before 'super()' "
        this.state={                   //way of using state in class based components like useStates in function based components
           articles:[] , //empty array                             
            page:1,
            loading:false
        }
+       document.title=`${this.capitalizeFirstLetter(this.props.category)}- NewsMonkey`
     }
+
+
+async updateNews(pageNo){
+  let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=${this.state.page}&pageSize=${this.props.pageSize}`
+    this.setState({loading:true})
+    let data=await fetch(url)        //fetches data from that url
+    let parsedData=await data.json();    //converts into json format
+    console.log(parsedData)
+    this.setState({
+      articles:parsedData.articles,     //updates data from that url to this articles array
+      totalResults:parsedData.totalResults , //totalResults is number of total adds present in this api link of newsapp.totalResults is a property of a parsed data
+      loading:false    
+    })   
+}
+
 async componentDidMount(){   //lifecycle method that gets called after a component has been rendered to the DOM
     let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=1&pageSize=${this.props.pageSize}`
     this.setState({loading:true})
@@ -37,45 +56,53 @@ async componentDidMount(){   //lifecycle method that gets called after a compone
       totalResults:parsedData.totalResults , //totalResults is number of total adds present in this api link of newsapp.totalResults is a property of a parsed data
       loading:false    
     })   
+   
 }
 //parsedData.articles    articals property of parsedData object
 
 handlePrevClick=async()=>{
-  let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=${this.state.page-1}&pageSize=${this.props.pageSize}`   //pageSize means how many adds should be present in one page
-  this.setState({loading:true})
-  let data=await fetch(url)        //fetches data from that url
-  let parsedData=await data.json();    //converts into json format
+  //let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=${this.state.page-1}&pageSize=${this.props.pageSize}`   //pageSize means how many adds should be present in one page
+  //this.setState({loading:true})
+  //let data=await fetch(url)        //fetches data from that url
+  //let parsedData=await data.json();    //converts into json format
   //console.log(parsedData)
-  this.setState({
-    page:this.state.page-1,
-    articles:parsedData.articles,
-    loading:false 
-    })
+  //this.setState({
+    //page:this.state.page-1,
+    //articles:parsedData.articles,
+    //loading:false 
+   // })
+   this.setState({
+    page:this.state.page+1
+  })
 }
 
 handleNextClick=async()=>{
-  if(this.state.page+1>(Math.ceil(this.state.totalResults/this.props.pageSize))){       //this.state.totalResults/20 it gives a total number of pages
-//if page number is greater than required pages nothing will happen after clicking on next
-  }else{
-  let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=${this.state.page+1}&pageSize=${this.props.pageSize}`
-  this.setState({loading:true})
-  let data=await fetch(url)        //fetches data from that url
-  let parsedData=await data.json();    //converts into json format
-  console.log(parsedData)
-  this.setState({
-    page:this.state.page+1,
-    articles:parsedData.articles,
-    loading:false 
-    }
-    )
-}
+  //if(this.state.page+1>(Math.ceil(this.state.totalResults/this.props.pageSize))){       //this.state.totalResults/20 it gives a total number of pages
+                        //if page number is greater than required pages nothing will happen after clicking on next
+  //}else{
+  //let url=`https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=6865fe494053414d9d32407174a03466&page=${this.state.page+1}&pageSize=${this.props.pageSize}`
+  //this.setState({loading:true})
+  //let data=await fetch(url)        //fetches data from that url
+  //let parsedData=await data.json();    //converts into json format
+  //console.log(parsedData)
+  //this.setState({
+    //page:this.state.page+1,
+    //articles:parsedData.articles,
+    //loading:false 
+   // }
+   // )
+//}
+
+ this.setState({
+      page:this.state.page+1
+    })
 }
 
 
   render() {
     return (
       <div className="container my-3">
-      <h1 className='text-center' style={{margin:"35px"}}>NewsMonkey-Top headlines</h1>
+      <h1 className='text-center' style={{margin:"35px"}}>NewsMonkey-Top {this.capitalizeFirstLetter(this.props.category)} headlines</h1>
       {this.state.loading && <Spinner/>   }     {/* if loading is true then only show spinner */}
       <div className="row">
       {this.state.articles.map((element)=>{
